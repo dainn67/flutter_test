@@ -25,12 +25,12 @@ class AuthenticationScreen extends StatelessWidget {
             MainButton(
                 title: 'Sign In',
                 onPressed: () {
-                  context.read<AuthenticationBloc>().add(SignInEvent());
+                  context.read<AuthenticationBloc>().add(SignInEvent('dainn@gmail.com', '1111'));
                 }),
             MainButton(
                 title: 'Sign Up',
                 onPressed: () {
-                  context.read<AuthenticationBloc>().add(SignUpEvent());
+                  context.read<AuthenticationBloc>().add(SignUpEvent('dainn@gmail.com', 'dainn', '1111'));
                 })
           ],
         ),

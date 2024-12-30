@@ -7,6 +7,7 @@ import 'package:routing_app/routes/route_management.dart';
 import 'package:routing_app/ui/screens/home_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

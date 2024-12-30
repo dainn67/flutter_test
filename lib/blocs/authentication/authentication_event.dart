@@ -1,5 +1,16 @@
 abstract class AuthenticationEvent {}
 
-class SignInEvent extends AuthenticationEvent {}
+class SignInEvent extends AuthenticationEvent {
+  String email;
+  String password;
 
-class SignUpEvent extends AuthenticationEvent {}
+  SignInEvent(this.email, this.password);
+}
+
+class SignUpEvent extends AuthenticationEvent {
+  String email;
+  String username;
+  String password;
+
+  SignUpEvent(this.email, this.username, this.password);
+}
