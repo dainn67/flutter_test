@@ -1,12 +1,17 @@
-class AuthenticationState {
-  String email;
-  String username;
-  String password;
+import 'package:routing_app/models/auth_user.dart';
 
-  AuthenticationState(this.email, this.username, this.password);
+abstract class AuthenticationState {}
 
-  @override
-  String toString() {
-    return 'email: $email\nusername: $username\npassword: $password';
-  }
+class AuthInitial extends AuthenticationState {}
+
+class AuthLoading extends AuthenticationState {}
+
+class AuthSuccess extends AuthenticationState {
+  final AuthUser user;
+  AuthSuccess(this.user);
+}
+
+class AuthFailed extends AuthenticationState {
+  final String error;
+  AuthFailed(this.error);
 }

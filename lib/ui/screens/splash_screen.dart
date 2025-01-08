@@ -21,15 +21,19 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   _checkCredential() async {
-    final authUserJson = SharedPreferencesRepo.instance.getAuthUser();
-    if (authUserJson != null) {
-      final authUser = AuthUser.fromJson(jsonDecode(authUserJson));
-      if (authUser.idToken != null) {
-        RouteManagement.instance.pushNamed(RouteConfig.home);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authUserJson = SharedPreferencesRepo.instance.getAuthUser();
+      if (authUserJson != null) {
+        final authUser = AuthUser.fromJson(jsonDecode(authUserJson));
+        if (authUser.idToken != null) {
+          RouteManagement.instance.pushNamed(RouteConfig.home);
+        } else {
+          RouteManagement.instance.pushNamed(RouteConfig.authentication);
+        }
       } else {
         RouteManagement.instance.pushNamed(RouteConfig.authentication);
       }
-    }
+    });
   }
 
   @override

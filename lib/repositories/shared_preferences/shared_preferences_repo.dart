@@ -12,6 +12,10 @@ class SharedPreferencesRepo {
     await SharedPreferencesHelper.instance.setString(SharedPreferencesConstants.authUser, authUser);
   }
 
+  Future<void> clearAuthUser() async {
+    await SharedPreferencesHelper.instance.remove(SharedPreferencesConstants.authUser);
+  }
+
   String? getAuthUser() {
     return SharedPreferencesHelper.instance.getString(SharedPreferencesConstants.authUser);
   }

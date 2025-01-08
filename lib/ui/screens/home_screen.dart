@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:routing_app/repositories/shared_preferences/shared_preferences_repo.dart';
 import 'package:routing_app/routes/route_config.dart';
 import 'package:routing_app/routes/route_management.dart';
 import 'package:routing_app/ui/components/main_button.dart';
@@ -16,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Test'),
+        title: const Text('Home'),
       ),
       body: SizedBox(
         width: double.infinity,
@@ -32,6 +33,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: 'Authentication screen',
                 onPressed: () {
                   RouteManagement.instance.pushNamed(RouteConfig.authentication);
+                }),
+            MainButton(
+                title: 'Sign out',
+                onPressed: () async {
+                  await SharedPreferencesRepo.instance.clearAuthUser();
+                  RouteManagement.instance.pushNamedAndRemoveUntil(RouteConfig.authentication, '/');
                 }),
           ],
         ),

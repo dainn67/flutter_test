@@ -1,11 +1,11 @@
-import 'dart:convert';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:routing_app/models/auth_user.dart';
-import 'package:routing_app/repositories/shared_preferences/shared_preferences_repo.dart';
-import 'package:routing_app/services/log_service.dart';
+import 'package:routing_app/blocs/authentication/authentication_bloc.dart';
+import 'package:routing_app/blocs/authentication/authentication_event.dart';
+import 'package:routing_app/blocs/authentication/authentication_state.dart';
+import 'package:routing_app/routes/route_config.dart';
+import 'package:routing_app/routes/route_management.dart';
 import 'package:routing_app/ui/components/main_button.dart';
 
 enum AuthenticationType { signIn, signUp }
@@ -19,27 +19,40 @@ class AuthenticationScreen extends StatefulWidget {
 
 class _AuthenticationScreenState extends State<AuthenticationScreen> {
   late TextEditingController emailController;
+  late TextEditingController usernameController;
   late TextEditingController passwordController;
   late TextEditingController confirmPasswordController;
 
   late AuthenticationType type;
+  late ValueNotifier<bool> loading;
 
   @override
   void initState() {
     type = AuthenticationType.signIn;
+    loading = ValueNotifier(false);
 
     emailController = TextEditingController();
+    usernameController = TextEditingController();
     passwordController = TextEditingController();
     confirmPasswordController = TextEditingController();
+
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        emailController.text = 'nguyendai060703@gmail.com';
+        passwordController.text = '111111';
+      }
+    });
 
     super.initState();
   }
 
   @override
   void dispose() {
+    usernameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+    loading.dispose();
 
     super.dispose();
   }
@@ -48,31 +61,53 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Authentication')),
-      body: Container(
-        padding: const EdgeInsets.all(16),
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+      body: BlocListener<AuthenticationBloc, AuthenticationState>(
+        listener: (context, state) {
+          if (state is AuthLoading) {
+            loading.value = true;
+          } else if (state is AuthSuccess) {
+            loading.value = false;
+            RouteManagement.instance.pushNamedAndRemoveUntil(RouteConfig.home, '/');
+          }
+        },
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            _buildTextField('Email', emailController),
-            _buildTextField('Password', passwordController, isPassword: true),
-            if (type == AuthenticationType.signUp) _buildTextField('Confirm Password', confirmPasswordController, isPassword: true),
-            MainButton(
-              title: type == AuthenticationType.signIn ? 'Sign In' : 'Create',
-              isSelected: true,
-              onPressed: type == AuthenticationType.signIn ? _onSignIn : _onRegister,
+            Container(
+              padding: const EdgeInsets.all(16),
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildTextField('Email', emailController),
+                  if (type == AuthenticationType.signUp) _buildTextField('Username', confirmPasswordController),
+                  _buildTextField('Password', passwordController, isPassword: true),
+                  if (type == AuthenticationType.signUp) _buildTextField('Confirm Password', confirmPasswordController, isPassword: true),
+                  MainButton(
+                    title: type == AuthenticationType.signIn ? 'Sign In' : 'Create',
+                    isSelected: true,
+                    onPressed: type == AuthenticationType.signIn ? _onSignIn : _onRegister,
+                  ),
+                  MainButton(
+                      title: type == AuthenticationType.signIn ? 'Sign Up' : 'Sign In',
+                      onPressed: () {
+                        setState(() {
+                          if (type == AuthenticationType.signIn) {
+                            type = AuthenticationType.signUp;
+                          } else {
+                            type = AuthenticationType.signIn;
+                          }
+                        });
+                      })
+                ],
+              ),
             ),
-            MainButton(
-                title: type == AuthenticationType.signIn ? 'Sign Up' : 'Sign In',
-                onPressed: () {
-                  setState(() {
-                    if (type == AuthenticationType.signIn) {
-                      type = AuthenticationType.signUp;
-                    } else {
-                      type = AuthenticationType.signIn;
-                    }
-                  });
-                })
+            IgnorePointer(
+              child: ValueListenableBuilder(
+                valueListenable: loading,
+                builder: (_, isLoading, __) => isLoading ? const Text('Loading ...') : const SizedBox(),
+              ),
+            ),
           ],
         ),
       ),
@@ -106,40 +141,17 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    print('signing in with $email - $password');
-
-    if (email.isEmpty || password.isEmpty) Fluttertoast.showToast(msg: 'Email or Password empty');
-
-    try {
-      UserCredential credential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-      printSuccess('name: ${credential.user?.displayName}');
-      printSuccess('email: ${credential.user?.email}');
-      printSuccess('refreshToken: ${credential.user?.refreshToken}');
-      printSuccess('idToken: ${await credential.user?.getIdToken()}');
-      final user = credential.user;
-
-      final authUser = AuthUser(
-        username: user?.displayName,
-        email: user?.email,
-        photoUrl: user?.photoURL,
-        refreshToken: user?.refreshToken,
-        idToken: user?.refreshToken,
-        uid: user?.uid,
-      );
-
-      final authUserJson = jsonEncode(authUser.toJson());
-
-      SharedPreferencesRepo.instance.saveAuthUser(authUserJson);
-
-      Fluttertoast.showToast(msg: 'Sign In Success !');
-    } catch (e) {
-      print('SignIn Error: $e');
-      Fluttertoast.showToast(msg: 'Sign In Failed !');
+    if (email.isEmpty || password.isEmpty) {
+      Fluttertoast.showToast(msg: 'Email or Password empty');
+      return;
     }
+
+    context.read<AuthenticationBloc>().add(SignInEvent(email, password));
   }
 
   _onRegister() async {
     String email = emailController.text.trim();
+    String username = usernameController.text.trim();
     String password = passwordController.text.trim();
     String confirmPassword = confirmPasswordController.text.trim();
 
@@ -148,18 +160,6 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
       return;
     }
 
-    try {
-      final UserCredential credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
-      printSuccess('Credential: ${credential.user?.refreshToken}');
-    } catch (e) {
-      print('SignUp Error: $e');
-      _checkError(e.toString());
-    }
-  }
-
-  _checkError(String e) {
-    if (e.contains('email-already-in-use')) {
-      Fluttertoast.showToast(msg: 'Account already exists');
-    }
+    context.read<AuthenticationBloc>().add(SignUpEvent(email, username, password));
   }
 }
