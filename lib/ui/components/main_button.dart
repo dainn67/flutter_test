@@ -4,12 +4,14 @@ class MainButton extends StatelessWidget {
   final String title;
   final void Function() onPressed;
   final bool isSelected;
+  final bool isLoading;
 
   const MainButton({
     super.key,
     required this.title,
     required this.onPressed,
     this.isSelected = false,
+    this.isLoading = false,
   });
 
   @override
@@ -23,7 +25,17 @@ class MainButton extends StatelessWidget {
       ),
       elevation: 0,
       onPressed: onPressed,
-      child: Text(title),
+      child: isLoading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                color: Colors.lightBlue,
+                strokeCap: StrokeCap.round,
+                strokeWidth: 3,
+              ),
+            )
+          : Text(title),
     );
   }
 }

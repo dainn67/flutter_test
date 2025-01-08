@@ -6,12 +6,27 @@ class AuthInitial extends AuthenticationState {}
 
 class AuthLoading extends AuthenticationState {}
 
-class AuthSuccess extends AuthenticationState {
+class AuthSignInSuccess extends AuthenticationState {
   final AuthUser user;
-  AuthSuccess(this.user);
+
+  AuthSignInSuccess(this.user);
 }
 
+class AuthLogOutSuccess extends AuthenticationState {}
+
 class AuthFailed extends AuthenticationState {
-  final String error;
-  AuthFailed(this.error);
+  final dynamic _error;
+  
+  String getError() {
+    final errorString = _error.toString(); 
+    if (errorString.contains('email-already-in-use')) {
+      return 'Account already exists';
+    } else if (errorString.contains('invalid-credential')) {
+      return 'Invalid email or password';
+    }
+
+    return 'An error happened! Try again later';
+  }
+
+  AuthFailed(this._error);
 }

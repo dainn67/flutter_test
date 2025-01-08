@@ -19,6 +19,8 @@ dependencies:
   json_serializable: ^6.9.0
   json_annotation: ^4.9.0
   build_runner: ^2.4.13
+  firebase_crashlytics: ^4.3.0
+  firebase_analytics: ^11.4.0
 
 dev_dependencies:
   flutter_test:

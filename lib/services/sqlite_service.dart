@@ -40,7 +40,7 @@ class SqliteService {
     final path = join(documentsDirectory.path, assetFileName);
 
     if (await File(path).exists()) {
-      printWarning('Database already exists at $path');
+      printSuccess('Database already exists at $path');
       return path;
     }
 

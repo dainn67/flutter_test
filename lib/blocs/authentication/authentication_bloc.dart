@@ -16,6 +16,7 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   AuthenticationBloc(this.topicRepository) : super(AuthInitial()) {
     on<SignInEvent>(_handleSignIn);
     on<SignUpEvent>(_handleSignUp);
+    on<LogOutEvent>(_handleLogOut);
   }
 
   final TopicRepository topicRepository;
@@ -43,10 +44,9 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
       // Save to shared pref
       SharedPreferencesRepo.instance.saveAuthUser(jsonEncode(authUser.toJson()));
 
-      emit(AuthSuccess(authUser));
+      emit(AuthSignInSuccess(authUser));
     } catch (e) {
-      _checkError(e);
-      emit(AuthFailed(e.toString()));
+      emit(AuthFailed(e));
     }
   }
 
@@ -58,15 +58,25 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
 
     try {
       final UserCredential credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+      final user = credential.user;
+
+      final authUser = AuthUser(
+        username: user?.displayName,
+        email: user?.email,
+        photoUrl: user?.photoURL,
+        refreshToken: user?.refreshToken,
+        idToken: user?.refreshToken,
+        uid: user?.uid,
+      );
+      emit(AuthSignInSuccess(authUser));
     } catch (e) {
-      _checkError(e);
-      emit(AuthFailed(e.toString()));
+      emit(AuthFailed(e));
     }
   }
 
-  _checkError(dynamic e) {
-    if (e.toString().contains('email-already-in-use')) {
-      Fluttertoast.showToast(msg: 'Account already exists');
-    }
+  _handleLogOut(AuthenticationEvent event, Emitter<AuthenticationState> emit) async {
+    emit(AuthLoading());
+    await SharedPreferencesRepo.instance.clearAuthUser();
+    emit(AuthLogOutSuccess());
   }
 }

@@ -26,12 +26,13 @@ class _SplashScreenState extends State<SplashScreen> {
       if (authUserJson != null) {
         final authUser = AuthUser.fromJson(jsonDecode(authUserJson));
         if (authUser.idToken != null) {
-          RouteManagement.instance.pushNamed(RouteConfig.home);
+          RouteManagement.instance.pushNamedAndRemoveUntil(RouteConfig.home, '/');
         } else {
-          RouteManagement.instance.pushNamed(RouteConfig.authentication);
+          RouteManagement.instance.pushNamedAndRemoveUntil(RouteConfig.authentication, '/');
         }
       } else {
-        RouteManagement.instance.pushNamed(RouteConfig.authentication);
+        RouteManagement.instance.pushNamedAndRemoveUntil(RouteConfig.authentication, '/');
+
       }
     });
   }

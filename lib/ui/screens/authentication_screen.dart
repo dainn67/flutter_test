@@ -24,12 +24,10 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   late TextEditingController confirmPasswordController;
 
   late AuthenticationType type;
-  late ValueNotifier<bool> loading;
 
   @override
   void initState() {
     type = AuthenticationType.signIn;
-    loading = ValueNotifier(false);
 
     emailController = TextEditingController();
     usernameController = TextEditingController();
@@ -52,7 +50,6 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
-    loading.dispose();
 
     super.dispose();
   }
@@ -61,55 +58,59 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Authentication')),
-      body: BlocListener<AuthenticationBloc, AuthenticationState>(
-        listener: (context, state) {
-          if (state is AuthLoading) {
-            loading.value = true;
-          } else if (state is AuthSuccess) {
-            loading.value = false;
-            RouteManagement.instance.pushNamedAndRemoveUntil(RouteConfig.home, '/');
-          }
-        },
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _buildTextField('Email', emailController),
-                  if (type == AuthenticationType.signUp) _buildTextField('Username', confirmPasswordController),
-                  _buildTextField('Password', passwordController, isPassword: true),
-                  if (type == AuthenticationType.signUp) _buildTextField('Confirm Password', confirmPasswordController, isPassword: true),
-                  MainButton(
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildTextField('Email', emailController),
+                if (type == AuthenticationType.signUp) _buildTextField('Username', confirmPasswordController),
+                _buildTextField('Password', passwordController, isPassword: true),
+                if (type == AuthenticationType.signUp) _buildTextField('Confirm Password', confirmPasswordController, isPassword: true),
+                BlocConsumer<AuthenticationBloc, AuthenticationState>(
+                  listener: (context, state) {
+                    if (state is AuthSignInSuccess) {
+                      RouteManagement.instance.pushNamedAndRemoveUntil(RouteConfig.home, '/');
+                    } else if (state is AuthFailed) {
+                      Fluttertoast.showToast(msg: state.getError());
+                    }
+                  },
+                  builder: (context, state) => MainButton(
                     title: type == AuthenticationType.signIn ? 'Sign In' : 'Create',
                     isSelected: true,
+                    isLoading: state is AuthLoading,
                     onPressed: type == AuthenticationType.signIn ? _onSignIn : _onRegister,
                   ),
-                  MainButton(
-                      title: type == AuthenticationType.signIn ? 'Sign Up' : 'Sign In',
-                      onPressed: () {
-                        setState(() {
-                          if (type == AuthenticationType.signIn) {
-                            type = AuthenticationType.signUp;
-                          } else {
-                            type = AuthenticationType.signIn;
-                          }
-                        });
-                      })
-                ],
-              ),
+                ),
+                MainButton(
+                    title: type == AuthenticationType.signIn ? 'Sign Up' : 'Sign In',
+                    onPressed: () {
+                      setState(() {
+                        if (type == AuthenticationType.signIn) {
+                          type = AuthenticationType.signUp;
+                        } else {
+                          type = AuthenticationType.signIn;
+                        }
+                      });
+                    })
+              ],
             ),
-            IgnorePointer(
-              child: ValueListenableBuilder(
-                valueListenable: loading,
-                builder: (_, isLoading, __) => isLoading ? const Text('Loading ...') : const SizedBox(),
-              ),
+          ),
+
+          // Loading
+          BlocConsumer<AuthenticationBloc, AuthenticationState>(
+            listener: (context, state) {
+
+            },
+            builder: (context, state) => IgnorePointer(
+              child: state is AuthLoading ? const Text('Loading ...') : const SizedBox(),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
