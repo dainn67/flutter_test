@@ -1,4 +1,3 @@
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:routing_app/blocs/authentication/authentication_bloc.dart';
@@ -6,6 +5,7 @@ import 'package:routing_app/blocs/authentication/authentication_event.dart';
 import 'package:routing_app/blocs/authentication/authentication_state.dart';
 import 'package:routing_app/routes/route_config.dart';
 import 'package:routing_app/routes/route_management.dart';
+import 'package:routing_app/services/firbase_service.dart';
 import 'package:routing_app/ui/components/main_button.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -46,17 +46,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     context.read<AuthenticationBloc>().add(LogOutEvent());
                   }),
             ),
-            MainButton(
-                title: 'Throw Exception',
-                onPressed: () {
-                  try {
-                    final list = [0, 1, 2];
-                    print(list[3]);
-                  } catch (e, stack) {
-                    FirebaseCrashlytics.instance.recordError(e, stack);
-                    print('Err: $e');
-                  }
-                }),
+            MainButton(title: 'Throw Exception', onPressed: () => throw Exception()),
+            MainButton(title: 'Log firebase event', onPressed: () => FirebaseService.logEvent(name: 'test_event', params: {'id': 'test_id'}))
           ],
         ),
       ),

@@ -2,15 +2,11 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:routing_app/blocs/authentication/authentication_event.dart';
 import 'package:routing_app/blocs/authentication/authentication_state.dart';
 import 'package:routing_app/models/auth_user.dart';
 import 'package:routing_app/repositories/shared_preferences/shared_preferences_repo.dart';
 import 'package:routing_app/repositories/sqlite/topic_repo.dart';
-import 'package:routing_app/routes/route_config.dart';
-
-import '../../routes/route_management.dart';
 
 class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> {
   AuthenticationBloc(this.topicRepository) : super(AuthInitial()) {
@@ -53,7 +49,6 @@ class AuthenticationBloc extends Bloc<AuthenticationEvent, AuthenticationState> 
   _handleSignUp(AuthenticationEvent event, Emitter<AuthenticationState> emit) async {
     final signUpEvent = event as SignUpEvent;
     final email = signUpEvent.email;
-    final username = signUpEvent.username;
     final password = signUpEvent.password;
 
     try {

@@ -21,6 +21,7 @@ dependencies:
   build_runner: ^2.4.13
   firebase_crashlytics: ^4.3.0
   firebase_analytics: ^11.4.0
+  firebase_messaging: ^15.2.0
 
 dev_dependencies:
   flutter_test:

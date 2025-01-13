@@ -10,6 +10,7 @@ import 'package:routing_app/repositories/shared_preferences/shared_preferences_h
 import 'package:routing_app/repositories/sqlite/topic_repo.dart';
 import 'package:routing_app/routes/custom_navigator_observer.dart';
 import 'package:routing_app/routes/route_management.dart';
+import 'package:routing_app/services/firbase_service.dart';
 import 'package:routing_app/services/log_service.dart';
 import 'package:routing_app/services/sqlite_service.dart';
 import 'package:routing_app/ui/screens/splash_screen.dart';
@@ -23,6 +24,8 @@ void main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
+
+  await FirebaseService.initNotification();
 
   await SharedPreferencesHelper.init().catchError((e) {
     printError('init shared_prefs error: $e');
