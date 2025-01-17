@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:routing_app/blocs/authentication/authentication_bloc.dart';
-import 'package:routing_app/blocs/authentication/authentication_event.dart';
-import 'package:routing_app/blocs/authentication/authentication_state.dart';
+import 'package:provider/provider.dart';
+import 'package:routing_app/extensions/build_context_extensions.dart';
+import 'package:routing_app/providers/auth_provider.dart';
+import 'package:routing_app/providers/theme_provider.dart';
 import 'package:routing_app/routes/route_config.dart';
 import 'package:routing_app/routes/route_management.dart';
 import 'package:routing_app/services/firbase_service.dart';
 import 'package:routing_app/ui/components/main_button.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,25 +30,22 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             MainButton(
-                title: 'Counter screen',
-                onPressed: () {
-                  RouteManagement.instance.pushNamed(RouteConfig.counter);
-                }),
-            BlocConsumer<AuthenticationBloc, AuthenticationState>(
-              listener: (context, state) {
-                if (state is AuthLogOutSuccess) {
+                title: 'Sign out',
+                onPressed: () async {
+                  await context.read<AuthProvider>().handleLogOut();
                   RouteManagement.instance.pushNamedAndRemoveUntil(RouteConfig.authentication, '/');
-                }
-              },
-              builder: (context, state) => MainButton(
-                  title: 'Sign out',
-                  isLoading: state is AuthLoading,
-                  onPressed: () async {
-                    context.read<AuthenticationBloc>().add(LogOutEvent());
-                  }),
-            ),
+                }),
             MainButton(title: 'Throw Exception', onPressed: () => throw Exception()),
-            MainButton(title: 'Log firebase event', onPressed: () => FirebaseService.logEvent(name: 'test_event', params: {'id': 'test_id'}))
+            MainButton(title: 'Log firebase event', onPressed: () => FirebaseService.logEvent(name: 'test_event', params: {'id': 'test_id'})),
+            MainButton(
+                title: 'Change theme',
+                onPressed: () {
+                  context.read<ThemeProvider>().toggleTheme();
+                }),
+            Text(
+              (AppLocalizations.of(context)?.test).toString(),
+              style: TextStyle(color: context.darkMode ? Colors.red : Colors.blue),
+            )
           ],
         ),
       ),

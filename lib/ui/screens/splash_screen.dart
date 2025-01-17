@@ -32,7 +32,6 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       } else {
         RouteManagement.instance.pushNamedAndRemoveUntil(RouteConfig.authentication, '/');
-
       }
     });
   }

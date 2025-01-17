@@ -8,7 +8,8 @@ class SharedPreferencesRepo {
 
   static SharedPreferencesRepo get instance => _instance ??= SharedPreferencesRepo._();
 
-  Future<void> saveAuthUser(String authUser) async {
+  // Authentication
+  Future<void> setAuthUser(String authUser) async {
     await SharedPreferencesHelper.instance.setString(SharedPreferencesConstants.authUser, authUser);
   }
 
@@ -18,5 +19,14 @@ class SharedPreferencesRepo {
 
   String? getAuthUser() {
     return SharedPreferencesHelper.instance.getString(SharedPreferencesConstants.authUser);
+  }
+
+  // Theme
+  Future<void> setThemeValue(int themeValue) async {
+    await SharedPreferencesHelper.instance.setInt(SharedPreferencesConstants.themeValue, themeValue);
+  }
+
+  int getThemeValue() {
+    return SharedPreferencesHelper.instance.getInt(SharedPreferencesConstants.themeValue) ?? -1;
   }
 }
