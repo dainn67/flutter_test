@@ -27,7 +27,7 @@ void main() async {
     return true;
   };
 
-  await FirebaseService.initNotification();
+  await FirebaseService.init();
 
   await SharedPreferencesHelper.init().catchError((e) {
     printError('init shared_prefs error: $e');

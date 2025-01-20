@@ -26,6 +26,7 @@ dependencies:
   intl: any
   flutter_localizations:
     sdk: flutter
+  firebase_remote_config: ^5.3.0
 
 dev_dependencies:
   flutter_test:

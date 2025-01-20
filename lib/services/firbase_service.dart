@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:routing_app/services/log_service.dart';
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
@@ -13,10 +14,28 @@ class FirebaseService {
 
   static final _firebaseMessaging = FirebaseMessaging.instance;
 
-  static Future<void> initNotification() async {
+  static final remoteConfig = FirebaseRemoteConfig.instance;
+
+  static Future<void> init() async {
+    await _initNotification();
+    await _initRemoteConfig();
+  }
+
+  static _initRemoteConfig() async {
+    await remoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: const Duration(minutes: 1),
+      minimumFetchInterval: const Duration(hours: 1),
+    ));
+
+    // await remoteConfig.setDefaults(const {
+    //   'test': true,
+    //   'number': 10,
+    // });
+  }
+
+  static _initNotification() async {
     await _firebaseMessaging.requestPermission();
     final fcmToken = await _firebaseMessaging.getToken();
-    print(fcmToken);
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
   }
 

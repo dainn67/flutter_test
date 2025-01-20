@@ -45,7 +45,13 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               (AppLocalizations.of(context)?.test).toString(),
               style: TextStyle(color: context.darkMode ? Colors.red : Colors.blue),
-            )
+            ),
+            Text('Remote config: ${FirebaseService.remoteConfig.getBool('test')}'),
+            MainButton(title: 'Fetch remote config', onPressed: (){
+              FirebaseService.remoteConfig.fetchAndActivate().then((_) {
+                print('FETCH DONE');
+              });
+            })
           ],
         ),
       ),
