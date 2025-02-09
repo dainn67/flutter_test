@@ -8,6 +8,8 @@ import 'package:path/path.dart';
 
 class SqliteService {
   static SqliteService? _instance;
+  static const int _databaseVersion = 1;  // Add version control
+  bool _isInitialized = false;  // Track initialization state
 
   static SqliteService get instance => _instance ??= SqliteService._();
 
@@ -21,7 +23,11 @@ class SqliteService {
 
   late Database database;
 
+  bool get isInitialized => _isInitialized;
+
   Future<void> init() async {
+    if (_isInitialized) return;  // Prevent multiple initializations
+
     String? path = await copyDatabaseFile('data.db');
     if (path == null) {
       printError('sqliteService init error');
@@ -29,9 +35,37 @@ class SqliteService {
     }
 
     try {
-      database = await openDatabase(path);
+      database = await openDatabase(
+        path,
+        version: _databaseVersion,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+      );
+      _isInitialized = true;
     } catch (e) {
       printError('Open database failed: $e');
+      rethrow;  // Propagate error to caller
+    }
+  }
+
+  Future<void> _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableName (
+        $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
+        $columnName TEXT NOT NULL,
+        $columnAge INTEGER
+      )
+    ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    //TODO: Handle database migrations here
+  }
+
+  Future<void> close() async {
+    if (_isInitialized) {
+      await database.close();
+      _isInitialized = false;
     }
   }
 
@@ -59,5 +93,9 @@ class SqliteService {
       printError('Error loading asset: $e');
       return null;
     }
+  }
+
+  Future<void> closeDatabase() async {
+    await close();
   }
 }

@@ -1,0 +1,7 @@
+{
+    "apc.stylesheet": {
+        ".anysphere-markdown-container-root": "font-size: 15px !important; line-height: 1.5 !important;",
+        ".view-line": "font-size: 14px !important;",
+        ".aislash-editor-input": "font-size: 15px !important; line-height: 1.5 !important;"
+    },
+}
